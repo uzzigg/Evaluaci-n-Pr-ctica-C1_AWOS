@@ -44,3 +44,14 @@ FROM customers c
 JOIN orders o ON c.id=o.customer_id
 JOIN payments pa ON o.id=pa.order_id
 GROUP BY c.id,c.name;
+
+CREATE VIEW vw_payment_mix AS
+WITH totals AS (
+  SELECT SUM(paid_amount) as total FROM payments
+)
+SELECT
+  method,
+  SUM(paid_amount) as total,
+  ROUND(100*SUM(paid_amount)/(SELECT total FROM totals),2) as percentage
+FROM payments
+GROUP BY method;
