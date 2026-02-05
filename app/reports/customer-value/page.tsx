@@ -1,21 +1,31 @@
 import { pool } from "@/lib/db";
+import { z } from "zod";
 
-export default async function Page() {
+const schema = z.object({
+  page: z.coerce.number().min(1).default(1),
+});
+
+export default async function Page({ searchParams }: any) {
+  const { page } = schema.parse(searchParams);
+
+  const limit = 5;
+  const offset = (page-1)*limit;
+
   const { rows } = await pool.query(
-    "SELECT * FROM vw_customer_value"
+    "SELECT * FROM vw_customer_value LIMIT $1 OFFSET $2",
+    [limit, offset]
   );
 
   return (
     <div>
       <h1>Valor de clientes</h1>
-      <p>Clientes con mayor gasto</p>
 
       <table border={1}>
         <thead>
           <tr>
             <th>Cliente</th>
             <th>Órdenes</th>
-            <th>Total gastado</th>
+            <th>Total</th>
             <th>Promedio</th>
           </tr>
         </thead>
@@ -30,6 +40,9 @@ export default async function Page() {
           ))}
         </tbody>
       </table>
+
+      <a href={`?page=${page-1}`}>Anterior</a>{" "}
+      <a href={`?page=${page+1}`}>Siguiente</a>
     </div>
   );
 }
