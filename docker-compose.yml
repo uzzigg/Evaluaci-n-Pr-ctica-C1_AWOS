@@ -1,0 +1,28 @@
+version: "3.9"
+
+services:
+
+  db:
+    image: postgres:15
+    container_name: cafe_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/1_schema.sql
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/2_seed.sql
+      - ./db/reports_vw.sql:/docker-entrypoint-initdb.d/3_views.sql
+      - ./db/indexes.sql:/docker-entrypoint-initdb.d/4_indexes.sql
+      - ./db/roles.sql:/docker-entrypoint-initdb.d/5_roles.sql
+
+  web:
+    build: .
+    container_name: cafe_web
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
