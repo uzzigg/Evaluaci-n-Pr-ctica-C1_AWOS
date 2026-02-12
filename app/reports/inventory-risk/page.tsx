@@ -1,14 +1,17 @@
 export const dynamic = "force-dynamic";
 
-import { pool } from "@/lib/db";
+import Link from "next/link";
+import { getInventoryRisk, type InventoryRiskRow } from "@/backend/inventoryRisk";
 
 export default async function Page() {
-  const { rows } = await pool.query(
-    "SELECT * FROM vw_inventory_risk"
-  );
+  const rows = await getInventoryRisk();
 
   return (
     <div>
+      <Link href="/" className="back-link">
+        ← Volver al inicio
+      </Link>
+
       <h1>Riesgo de inventario</h1>
       <p>Productos con bajo stock</p>
 
@@ -22,7 +25,7 @@ export default async function Page() {
           </tr>
         </thead>
         <tbody>
-          {rows.map((r:any,i:number)=>(
+          {rows.map((r: InventoryRiskRow,i:number)=>(
             <tr key={i}>
               <td>{r.category}</td>
               <td>{r.product}</td>

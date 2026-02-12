@@ -59,6 +59,8 @@ form {
   margin: 20px 0;
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
+  align-items: flex-end;
 }
 
 input {
@@ -102,4 +104,102 @@ td {
 
 tr:hover {
   background: #f1f1f1;
+}
+
+/* Contenedores personalizados */
+.pagination {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.pagination span {
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.pagination a {
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  background-color: #f0f0f0;
+  color: #333;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pagination a:hover {
+  background-color: #e0e0e0;
+  text-decoration: none;
+}
+
+.info-box {
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+  width: fit-content;
+}
+
+.info-box .label {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.info-box .value {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.description {
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+.search-container {
+  flex: 1;
+  min-width: 200px;
+}
+
+.search-container input {
+  width: 100%;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+/* ✅ CLASE PARA ERRORES - Reemplaza la pseudoclase inválida */
+.error-container {
+  color: #d32f2f;
+  padding: 2rem;
+}
+
+/* Cells centered */
+td {
+  text-align: left;
+}
+
+/* Cell alignment in empty tables */
+td[colspan] {
+  text-align: center;
+  color: #666;
+  padding: 1rem;
+}
+
+/* Rank cell styling */
+.rank {
+  font-weight: 600;
+  color: #0066cc;
 }

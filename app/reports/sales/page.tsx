@@ -1,27 +1,13 @@
 export const dynamic = "force-dynamic";
 
-import { Pool } from "pg";
+import Link from "next/link";
+import { getSalesData, type SalesRow } from "@/backend/sales";
 import { z } from "zod";
-
-const pool = new Pool({
-  host: process.env.DB_HOST || "localhost",
-  user: process.env.DB_USER || "postgres",
-  password: process.env.DB_PASSWORD || "postgres",
-  database: process.env.DB_NAME || "postgres",
-  port: Number(process.env.DB_PORT) || 5432,
-});
 
 const FilterSchema = z.object({
   date_from: z.string().optional().transform(val => val && val.match(/^\d{4}-\d{2}-\d{2}$/) ? val : undefined),
   date_to: z.string().optional().transform(val => val && val.match(/^\d{4}-\d{2}-\d{2}$/) ? val : undefined),
 });
-
-interface SalesRow {
-  day: Date;
-  total_sales: number;
-  tickets: number;
-  avg_ticket: number;
-}
 
 export default async function Page({ 
   searchParams 
@@ -32,93 +18,85 @@ export default async function Page({
   const { date_from, date_to } = FilterSchema.parse(params);
 
   try {
-    const sqlQuery = `
-      SELECT day, total_sales, tickets, avg_ticket
-      FROM vw_sales_daily 
-      WHERE ($1::DATE IS NULL OR day >= $1)
-        AND ($2::DATE IS NULL OR day <= $2)
-      ORDER BY day DESC
-    `;
-
-    const { rows } = await pool.query(sqlQuery, [date_from || null, date_to || null]);
+    const rows = await getSalesData(date_from, date_to);
     
     const total = rows.reduce((acc, r) => acc + Number(r.total_sales), 0);
 
     return (
-      <div style={{ padding: "2rem" }}>
+      <div>
+        <Link href="/" className="back-link">
+          ← Volver al inicio
+        </Link>
+
         <h1>Ventas diarias</h1>
 
-        <form style={{ margin: "1.5rem 0", display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "flex-end" }}>
+        <form>
           <div>
-            <label htmlFor="date_from" style={{ display: "block", marginBottom: "0.5rem" }}>Desde</label>
+            <label htmlFor="date_from">Desde</label>
             <input
               id="date_from"
               name="date_from"
               type="date"
               defaultValue={date_from || ""}
-              style={{ padding: "0.5rem" }}
             />
           </div>
           <div>
-            <label htmlFor="date_to" style={{ display: "block", marginBottom: "0.5rem" }}>Hasta</label>
+            <label htmlFor="date_to">Hasta</label>
             <input
               id="date_to"
               name="date_to"
               type="date"
               defaultValue={date_to || ""}
-              style={{ padding: "0.5rem" }}
             />
           </div>
-          <button type="submit" style={{ padding: "0.5rem 1rem", cursor: "pointer" }}>
+          <button type="submit">
             Filtrar
           </button>
           {(date_from || date_to) && (
-            <a href="/reports/sales" style={{ padding: "0.5rem 1rem", textDecoration: "none" }}>
+            <a href="/reports/sales">
               Limpiar
             </a>
           )}
         </form>
 
-        <div style={{ marginBottom: "1.5rem" }}>
-          <div style={{ maxWidth: "250px", padding: "1rem", border: "1px solid #ccc", borderRadius: "4px" }}>
-            <div style={{ fontSize: "0.875rem", color: "#666" }}>Total del Período</div>
-            <div style={{ fontSize: "1.5rem", fontWeight: "bold" }}>${total.toFixed(2)}</div>
-          </div>
+        <div className="info-box">
+          <div className="label">Total del Período</div>
+          <div className="value">${total.toFixed(2)}</div>
         </div>
 
-        <p style={{ marginBottom: "1rem" }}>Total registros: {rows.length}</p>
+        <p>Total registros: {rows.length}</p>
 
-        <div style={{ overflowX: "auto" }}>
-          <table border={1} style={{ borderCollapse: "collapse", width: "100%" }}>
+        <div className="table-container">
+          <table border={1}>
             <thead>
-              <tr style={{ backgroundColor: "#f5f5f5" }}>
-                <th style={{ padding: "0.75rem", textAlign: "left" }}>Día</th>
-                <th style={{ padding: "0.75rem", textAlign: "left" }}>Total</th>
-                <th style={{ padding: "0.75rem", textAlign: "left" }}>Tickets</th>
-                <th style={{ padding: "0.75rem", textAlign: "left" }}>Promedio</th>
+              <tr>
+                <th>Día</th>
+                <th>Total</th>
+                <th>Tickets</th>
+                <th>Promedio</th>
               </tr>
             </thead>
             <tbody>
               {rows.length > 0 ? (
                 (rows as SalesRow[]).map((r, i) => (
-                  <tr key={i} style={{ borderBottom: "1px solid #eee" }}>
-                    <td style={{ padding: "0.75rem" }}>
+                  <tr key={i}>
+                    <td>
                       {new Date(r.day).toLocaleDateString()}
                     </td>
-                    <td style={{ padding: "0.75rem" }}>
+                    <td>
                       ${Number(r.total_sales).toFixed(2)}
                     </td>
-                    <td style={{ padding: "0.75rem" }}>
+                    <td>
                       {r.tickets}
                     </td>
-                    <td style={{ padding: "0.75rem" }}>
+                    <td>
                       ${Number(r.avg_ticket).toFixed(2)}
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={4} style={{ padding: "1rem", textAlign: "center", color: "#666" }}>
+                  <td colSpan={4}>
                     No hay datos disponibles
                   </td>
                 </tr>
@@ -131,7 +109,7 @@ export default async function Page({
   } catch (error) {
     console.error("Error:", error);
     return (
-      <div style={{ padding: "2rem", color: "#d32f2f" }}>
+      <div>
         Error cargando datos: {String(error)}
       </div>
     );

@@ -1,14 +1,17 @@
 export const dynamic = "force-dynamic";
 
-import { pool } from "@/lib/db";
+import Link from "next/link";
+import { getPaymentMix, type PaymentMixRow } from "@/backend/paymentMix";
 
 export default async function Page() {
-  const { rows } = await pool.query(
-    "SELECT * FROM vw_payment_mix"
-  );
+  const rows = await getPaymentMix();
 
   return (
     <div>
+      <Link href="/" className="back-link">
+        ← Volver al inicio
+      </Link>
+
       <h1>Mezcla de pagos</h1>
       <p>Distribución por método de pago</p>
 
@@ -21,7 +24,7 @@ export default async function Page() {
           </tr>
         </thead>
         <tbody>
-          {rows.map((r:any,i:number)=>(
+          {rows.map((r: PaymentMixRow,i:number)=>(
             <tr key={i}>
               <td>{r.method}</td>
               <td>{r.total}</td>
